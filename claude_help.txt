@@ -1,0 +1,50 @@
+Key Concepts
+- Model: A pre-trained model (download separately - 50MB for small English model)
+- KaldiRecognizer: The core recognizer accepts audio chunks
+- setGrammar: Restricts recognition to a finite vocabulary
+
+Walkthrough of key ideas
+
+1. Install & get a model
+
+- pip install vosk
+- download model (there is a wget command)
+
+2. The finite vocabulary trick
+
+The critical part is passing a JSON grammar array to KaldiRecognizer
+
+    grammar = json.dumps(["yes", "no", "start", "stop", "[unk]"])
+    recognizer = KaldiRecognizer(model, sample_rate, grammar)
+
+[unk] acts as a catch-all for anything outside your list. Without it, Vosk will try to force-fit every sound into one of your wors, producing garbage results.
+
+3. Audo requirements
+
+Vosk requires mono, 16-bit PCM WAV. Convert with ffmpeg if needed
+
+    ffmpeg -i input.wav -ac 1 -ar 16000 -sample_fmt s16 output.wav
+
+4. Run it
+
+    python vosk_poc.py --audio sample.WAV
+
+Output includes:
+- Each recognized segment and its text
+- Per-word confidence scores and timestamps
+- A summary of ehich vocabulary words were detected
+
+Choosing a model:
+
+| Model                       | Size   | Quality
+-----------------------------------------------------------
+| vosk-model-small-en-us-0.15 | ~50MB  | Good for PoC
+| vosk-model-en-us-0.22       | ~1.8GB | Production quality
+
+
+Full model list at alphacephei.com/vosk/models. Vosk also supports 20+ languages with the same API.
+
+
+
+
+
